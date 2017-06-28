@@ -46,16 +46,16 @@ func main() {
 		log.SetOutput(slog)
 	}
 
-	cmd := exec.Command(*ipmiSel, "--output-event-state", "--comma-separated-output", "--no-header-output")
+	cmd := exec.Command(*ipmiSel, "--debug", "--output-event-state", "--comma-separated-output", "--no-header-output")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("Failed running `%s` with error `%s`\n", *ipmiSel, err)
-	}
-
 	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
 	log.Printf("%s: stdout `%s`, stderr `%s`", *ipmiSel, outStr, errStr)
+	if err := cmd.Run(); err != nil {
+		log.Printf("Got error running `%s`: `%s`\n", *ipmiSel, err)
+		os.Exit(0)
+	}
 
 	outStr = strings.TrimSpace(outStr)
 	lines := strings.Split(outStr, "\n")
