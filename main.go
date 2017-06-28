@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"syscall"
 
 	"log"
 
@@ -40,6 +41,7 @@ func main() {
 
 	if *debug {
 		log.SetOutput(io.MultiWriter(slog, os.Stderr))
+		log.Printf("uid=%d euid=%d gid=%d egid=%d\n", syscall.Getuid(), syscall.Geteuid(), syscall.Getgid(), syscall.Getegid())
 	} else {
 		log.SetOutput(slog)
 	}
