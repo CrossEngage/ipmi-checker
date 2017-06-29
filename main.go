@@ -22,6 +22,7 @@ var (
 	app       = kingpin.New(appName, "A command-line checker for IPMI checks using ipmi-sel, by CrossEngage")
 	checkName = app.Flag("name", "check name").Default(appName).String()
 	debug     = app.Flag("debug", "if set, enables debug log on stderr").Default("false").Bool()
+	deadman   = app.Flag("deadman", "if set, this program will always print something").Default("false").Bool()
 	ipmiSel   = app.Flag("ipmi-sel", "Path of ipmi-sel").Default("/usr/sbin/ipmi-sel").String()
 )
 
@@ -53,13 +54,13 @@ func main() {
 	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
 	log.Printf("%s: stdout `%s`, stderr `%s`", *ipmiSel, outStr, errStr)
 	if err := cmd.Run(); err != nil {
-		log.Printf("Got error running `%s`: `%s`\n", *ipmiSel, err)
-		os.Exit(0)
+		log.Printf("Got error running `%s`: `%s`\n", *ipmiSel, err) // purposely do not quit
 	}
 
-	outStr = strings.TrimSpace(outStr)
-	lines := strings.Split(outStr, "\n")
-	if len(lines) >= 0 {
+	lines := strings.Split(strings.TrimSpace(outStr), "\n")
+	log.Printf("%#v\n", lines)
+
+	if len(lines) >= 0 && lines[0] != "" {
 		for _, line := range lines {
 			line = strings.TrimSpace(line)
 			if len(line) == 0 {
@@ -74,7 +75,7 @@ func main() {
 			}
 			fmt.Println(ev.InfluxDB(*checkName, hostname))
 		}
-	} else {
+	} else if *deadman {
 		ev := newEmptyIPMIEvent()
 		fmt.Println(ev.InfluxDB(*checkName, hostname))
 	}
