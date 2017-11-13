@@ -52,9 +52,8 @@ func newIPMIEvent(stdOutLine string) (*ipmiEvent, error) {
 
 func (ev ipmiEvent) InfluxDB(checkName, hostname string) string {
 	return fmt.Sprintf(
-		`%s,host=%s,event_id=%s,error_level=%s,event_type=%s event_date="%s",event_time="%s",error_level="%s",sensor_name="%s",event_type="%s",error_message="%s",state=%d`,
-		checkName, hostname, ev.ID, ev.Level, ev.Type, ev.Time.Format("Jan-02-2006"), ev.Time.Format("03:04:05"), ev.Level, ev.Sensor, ev.Type, ev.Message, ev.State,
-	)
+		`%s,host="%s",event_id=%s,error_level="%s",event_type="%s",sensor_name="%s" error_message="%s",state=%d %d`,
+		checkName, hostname, ev.ID, ev.Level, ev.Type, ev.Sensor, ev.Message, ev.State, ev.Time.UnixNano())
 }
 
 func newEmptyIPMIEvent() *ipmiEvent {
