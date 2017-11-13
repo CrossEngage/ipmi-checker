@@ -19,6 +19,7 @@ dist: cleanup_dist $(PLATFORMS)
 $(PLATFORMS):
 	$(eval GOOS := $(firstword $(subst -, ,$@)))
 	$(eval GOARCH := $(lastword $(subst -, ,$@)))
+	go generate
 	env GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o $(DIST_DIR)/$(APPNAME).$(RELEASE).$@
 
 md5: dist
