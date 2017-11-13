@@ -2,7 +2,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log/syslog"
@@ -47,14 +46,10 @@ func main() {
 		log.SetOutput(slog)
 	}
 
-	cmd := exec.Command(*ipmiSel, "--debug", "--output-event-state", "--comma-separated-output", "--no-header-output")
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-	log.Printf("%s: stdout `%s`, stderr `%s`", *ipmiSel, outStr, errStr)
-	if err := cmd.Run(); err != nil {
-		log.Printf("Got error running `%s`: `%s`\n", *ipmiSel, err) // purposely do not quit
+	out, err := exec.Command(*ipmiSel, "--debug", "--output-event-state", "--comma-separated-output", "--no-header-output").Output()
+	outStr := string(out)
+	if err != nil {
+		log.Printf("Got error running `%s`: `%s` : `%s`\n", *ipmiSel, err, outStr) // purposely do not quit
 	}
 
 	lines := strings.Split(strings.TrimSpace(outStr), "\n")
@@ -71,9 +66,9 @@ func main() {
 			ev, err := newIPMIEvent(line)
 			log.Printf("Event: %#v\n", ev)
 			if err != nil {
-				log.Printf("Could not parse `%s` stdout: `%s`", line, outStr)
+				log.Printf("Could not parse line `%s`, err: `%s`", line, err)
+				continue
 			}
-			fmt.Println(ev.InfluxDB(*checkName, hostname))
 		}
 	} else if *deadman {
 		ev := newEmptyIPMIEvent()

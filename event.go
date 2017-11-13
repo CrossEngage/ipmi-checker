@@ -8,7 +8,7 @@ import (
 
 var (
 	errCouldNotParseCmdOut = "Unknown command output: %s"
-	errCouldNotParseTime   = "Could not parse time: %s"
+	errCouldNotParseTime   = "Could not parse time: %s: %s"
 )
 
 type ipmiEvent struct {
@@ -22,19 +22,19 @@ type ipmiEvent struct {
 }
 
 const (
-	timeFmt = "Jan-02-2006T03:04:05"
+	timeFmt = "Jan-02-2006T15:04:05"
 )
 
-func newIPMIEvent(stdout string) (*ipmiEvent, error) {
-	parts := strings.Split(stdout, ",")
+func newIPMIEvent(stdOutLine string) (*ipmiEvent, error) {
+	parts := strings.Split(stdOutLine, ",")
 	if len(parts) != 7 {
-		return nil, fmt.Errorf(errCouldNotParseCmdOut, stdout)
+		return nil, fmt.Errorf(errCouldNotParseCmdOut, stdOutLine)
 	}
 
 	inputTime := parts[1] + "T" + parts[2]
 	eventTime, err := time.Parse(timeFmt, inputTime)
 	if err != nil {
-		return nil, fmt.Errorf(errCouldNotParseTime, inputTime)
+		return nil, fmt.Errorf(errCouldNotParseTime, inputTime, err)
 	}
 
 	event := &ipmiEvent{
