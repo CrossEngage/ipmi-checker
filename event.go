@@ -50,10 +50,15 @@ func newIPMIEvent(stdOutLine string) (*ipmiEvent, error) {
 	return event, nil
 }
 
+func spacesToUnderscore(str string) string {
+	return strings.Replace(str, " ", "_", -1)
+}
+
 func (ev ipmiEvent) InfluxDB(checkName, hostname string) string {
 	return fmt.Sprintf(
-		`%s,host="%s",event_id=%s,error_level="%s",event_type="%s",sensor_name="%s" error_message="%s",state=%d %d`,
-		checkName, hostname, ev.ID, ev.Level, ev.Type, ev.Sensor, ev.Message, ev.State, ev.Time.UnixNano())
+		`%s,host=%s,event_type=%s,error_level=%s,sensor_name=%s event_id=%s,error_message="%s",state=%d %d`,
+		checkName, hostname, spacesToUnderscore(ev.Type), spacesToUnderscore(ev.Level), spacesToUnderscore(ev.Sensor),
+		ev.ID, ev.Message, ev.State, ev.Time.UnixNano())
 }
 
 func newEmptyIPMIEvent() *ipmiEvent {
