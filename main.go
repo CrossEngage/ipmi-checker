@@ -12,7 +12,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	logSys "github.com/sirupsen/logrus/hooks/syslog"
-	"gopkg.in/alecthomas/kingpin.v1"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
@@ -22,6 +22,7 @@ var (
 	debug      = app.Flag("debug", "if set, enables debug logging").Default("false").Bool()
 	syslogHook = app.Flag("syslog", "if set, enables logging to syslog").Default("false").Bool()
 	deadman    = app.Flag("deadman", "if set, this program will always print something").Default("false").Bool()
+	eventTime  = app.Flag("event-time", "if set, the event time will be used instead of current time (Use --no-event-time to set to false)").Default("true").Bool()
 	ipmiSel    = app.Flag("ipmi-sel", "Path of ipmi-sel").Default("/usr/sbin/ipmi-sel").String()
 )
 
@@ -74,10 +75,10 @@ func main() {
 				logrus.Errorf("Could not parse line `%s`, err: `%s`", line, err)
 				continue
 			}
-			fmt.Println(ev.InfluxDB(*checkName, hostname))
+			fmt.Println(ev.InfluxDB(*checkName, hostname, *eventTime))
 		}
 	} else if *deadman {
 		ev := newEmptyIPMIEvent()
-		fmt.Println(ev.InfluxDB(*checkName, hostname))
+		fmt.Println(ev.InfluxDB(*checkName, hostname, *eventTime))
 	}
 }

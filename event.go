@@ -54,11 +54,17 @@ func spacesToUnderscore(str string) string {
 	return strings.Replace(str, " ", "_", -1)
 }
 
-func (ev ipmiEvent) InfluxDB(checkName, hostname string) string {
+func (ev ipmiEvent) InfluxDB(checkName, hostname string, eventTime bool) string {
+	var timestamp time.Time
+	if eventTime {
+		timestamp = ev.Time
+	} else {
+		timestamp = time.Now()
+	}
 	return fmt.Sprintf(
 		`%s,host=%s,event_type=%s,error_level=%s,sensor_name=%s event_id=%s,error_message="%s",state=%d %d`,
 		checkName, hostname, spacesToUnderscore(ev.Type), spacesToUnderscore(ev.Level), spacesToUnderscore(ev.Sensor),
-		ev.ID, ev.Message, ev.State, ev.Time.UnixNano())
+		ev.ID, ev.Message, ev.State, timestamp.UnixNano())
 }
 
 func newEmptyIPMIEvent() *ipmiEvent {
